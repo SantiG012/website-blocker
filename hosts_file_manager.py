@@ -61,3 +61,6 @@ class HostsFileManager:
 
     def __remove_non_overwritten_lines(self)->None:
         self.__hosts_file.truncate()
+
+    def close_hosts_file(self):
+        self.__hosts_file.close()
