@@ -1,49 +1,44 @@
 from io import TextIOWrapper
+import time
 from constans import LOCALHOST, HOSTS_PATH, WEBSITES
 
 
 class HostsFileManager:
 
-    __hosts_file:TextIOWrapper
-
-    def __init__(self):
-        self.__open_hosts_file()
-    
 
     def block_websites(self):
-        hosts_file_content = self.__hosts_file.read() 
+        with open(HOSTS_PATH, 'r+') as hosts_file:
+            hosts_file_content = hosts_file.read() 
 
-        non_blocked_websites = self.__get_non_blocked_websites(hosts_file_content)
+            non_blocked_websites = self.__get_non_blocked_websites(hosts_file_content)
 
-        self.__append_non_blocked_websites_to_hosts_file(non_blocked_websites)
+            self.__append_non_blocked_websites_to(hosts_file, non_blocked_websites)
 
                 
      
     def unblock_websites(self): 
-        hosts_file_lines=self.__hosts_file.readlines()
-
-        self.__go_to_beginning_of_hosts_file()
-
-        hosts_file_lines = self.__remove_lines_with_websites_from(hosts_file_lines)
-
-        self.__rewrite_hosts_file_with(hosts_file_lines)
-    
-        self.__remove_non_overwritten_lines()
-
-    def __open_hosts_file(self):
         with open(HOSTS_PATH, 'r+') as hosts_file:
-            self.__hosts_file=hosts_file
+            hosts_file_lines=hosts_file.readlines()
+
+            self.__go_to_beginning_of(hosts_file)
+
+            hosts_file_lines = self.__remove_lines_with_websites_from(hosts_file_lines)
+
+            self.__rewrite(hosts_file, hosts_file_lines)
+        
+            self.__remove_non_overwritten_lines_of(hosts_file)
 
     def __get_non_blocked_websites(self,hosts_file_content:str)->[str]:
         return [website for website in WEBSITES if website not in hosts_file_content]
     
-    def __append_non_blocked_websites_to_hosts_file(self,non_blocked_websites:[str])->None:
+    @staticmethod
+    def __append_non_blocked_websites_to(hosts_file:TextIOWrapper,non_blocked_websites:[str])->None:
         for website in non_blocked_websites:
-            self.__hosts_file.write(LOCALHOST + " " + website + "\n")
+            hosts_file.write(LOCALHOST + " " + website + "\n")
 
-
-    def __go_to_beginning_of_hosts_file(self)->None:
-        self.__hosts_file.seek(0)
+    @staticmethod
+    def __go_to_beginning_of(hosts_file:TextIOWrapper)->None:
+        hosts_file.seek(0)
                 
     def __remove_lines_with_websites_from(self, hosts_file_lines:[str])->[str]:
         lines = []
@@ -56,11 +51,21 @@ class HostsFileManager:
         
         return lines
     
-    def __rewrite_hosts_file_with(self,hosts_file_lines:[str])->None:
-        self.__hosts_file.writelines(hosts_file_lines)
+    @staticmethod
+    def __rewrite(hosts_file:TextIOWrapper, hosts_file_lines:[str])->None:
+        hosts_file.writelines(hosts_file_lines)
 
-    def __remove_non_overwritten_lines(self)->None:
-        self.__hosts_file.truncate()
+    @staticmethod
+    def __remove_non_overwritten_lines_of(hosts_file:TextIOWrapper)->None:
+        hosts_file.truncate()
 
-    def close_hosts_file(self):
-        self.__hosts_file.close()
+
+if __name__ == "__main__":
+    hosts_file_manager = HostsFileManager()
+    hosts_file_manager.block_websites()
+    print("Blocked")
+
+    time.sleep(30)
+    
+    hosts_file_manager.unblock_websites()
+    print("Unblocked")
