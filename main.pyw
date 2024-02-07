@@ -1,25 +1,16 @@
 from datetime import datetime as dt
 from constans import *
-
+from hosts_file_manager import HostsFileManager
 
 actual_time = dt.now()
+
+hosts_file_manager = HostsFileManager()
   
     # time of your work 
 if LABOR_TIME_START  < actual_time < LABOR_TIME_END: 
 
-    with open(HOSTS_PATH, 'r+') as file: 
-        content = file.read() 
-        for website in WEBSITES: 
-            if not website in content: 
-                file.write(LOCALHOST + " " + website + "\n") 
+    hosts_file_manager.block_websites()
+
 else: 
-    with open(HOSTS_PATH, 'r+') as file: 
-        content=file.readlines() 
-        file.seek(0) 
-        for line in content: 
-            if not any(website in line for website in WEBSITES): 
-                file.write(line) 
-  
-            # removing hostnmes from host file 
-        file.truncate() 
+    hosts_file_manager.unblock_websites()
 
